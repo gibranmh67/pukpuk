@@ -1,0 +1,317 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My Boy — Pixel Love ♡</title>
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;padding:18px 12px;min-height:100vh;
+  background:#0a1510;color:#e5f2df;
+  font-family:monospace;display:flex;justify-content:center
+}
+.app{width:100%;max-width:620px}
+header{text-align:center;padding:12px}
+header h1{color:#c4e9b2;font-size:24px;letter-spacing:2px}
+header p{color:#9bbca0;font-size:11px;line-height:1.8}
+.card{background:#13271d;border:2px solid #42664a;border-radius:5px;overflow:hidden}
+.hud{display:flex;justify-content:space-between;padding:12px;font-size:11px}
+canvas{display:block;width:100%;height:auto;image-rendering:pixelated}
+#caption{min-height:76px;padding:14px;text-align:center;font-size:12px;line-height:1.9;color:#d5e9cd}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px}
+button{
+  padding:12px 5px;background:#203e2c;color:#e7f3e2;
+  border:2px solid #52775a;border-radius:3px;
+  font:12px monospace;cursor:pointer
+}
+button:active{transform:translateY(2px);background:#42664a}
+button span{display:block;font-size:22px;margin-bottom:6px}
+.note{margin:0 12px 12px;padding:13px;border:1px dashed #648466;font-size:11px;line-height:1.9;color:#bfd8b9}
+footer{text-align:center;padding:15px;color:#86a48a;font-size:10px}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <div>✦ A LITTLE PIXEL WORLD ✦</div>
+  <h1>MY BOY ♡</h1>
+  <p>TWO BOYS, ONE LITTLE WORLD.<br>— always here for you —</p>
+</header>
+
+<div class="card">
+  <div class="hud">
+    <span>♡ HIS MOOD</span>
+    <span id="mood">HAPPY 75%</span>
+  </div>
+  <canvas id="game" width="240" height="190"></canvas>
+  <div id="caption">Pacarmu lagi duduk menunggu kamu. Mau ngapain? ♡</div>
+  <div class="actions">
+    <button onclick="pet()"><span>♡</span>ELUS KEPALA</button>
+    <button onclick="hug()"><span>♥</span>PELUK DIA</button>
+    <button onclick="talk()"><span>♪</span>AJAK BICARA</button>
+    <button onclick="gift()"><span>✿</span>KASIH HADIAH</button>
+    <button onclick="comfort()"><span>☾</span>TEMANI DIA</button>
+    <button onclick="letter()"><span>✉</span>SURAT MENSIVE</button>
+  </div>
+  <div class="note">
+    <b>♡ LITTLE REMINDER</b><br>
+    Kamu nggak harus selalu sempurna untuk disayang.
+    Terus belajar saling memahami, bahkan di hari yang sulit.
+  </div>
+</div>
+<footer>made with love, especially for you ♡</footer>
+</div>
+
+<script>
+const c=document.getElementById('game');
+const ctx=c.getContext('2d');
+ctx.imageSmoothingEnabled=false;
+
+let action='idle',until=0,mood=75,frame=0,dialogue=0;
+let floating=[];
+
+function px(x,y,w,h,color){
+  ctx.fillStyle=color;
+  ctx.fillRect(Math.round(x),Math.round(y),w,h);
+}
+
+function heart(x,y,color='#f49bb0'){
+  px(x+2,y,3,3,color);
+  px(x+8,y,3,3,color);
+  px(x,y+3,13,4,color);
+  px(x+2,y+7,9,3,color);
+  px(x+4,y+10,5,2,color);
+}
+
+function character(x,y,kind,pose){
+  // Dua karakter cowok dengan model rambut berbeda
+  const hair=kind==='boy2'?'#60452f':'#29252b';
+  const shirt=kind==='boy2'?'#786087':'#294b3c';
+  const pants=kind==='boy2'?'#374354':'#26382f';
+  const skin=kind==='boy2'?'#dca984':'#edc09c';
+
+  // Kaki dan sepatu
+  px(x+5,y+36,5,8,pants);
+  px(x+13,y+36,5,8,pants);
+  px(x+3,y+43,7,3,'#d8e6d1');
+  px(x+12,y+43,7,3,'#d8e6d1');
+
+  // Badan
+  px(x+2,y+23,18,15,shirt);
+  px(x,y+25,3,12,shirt);
+  px(x+19,y+25,3,12,shirt);
+
+  if(pose==='hug'){
+    // Tangan terbuka saat memeluk
+    px(x-4,y+26,8,4,skin);
+    px(x+19,y+26,8,4,skin);
+    px(x-4,y+29,4,5,skin);
+  }
+
+  // Rambut pixel
+  px(x+3,y,16,3,hair);
+  px(x+1,y+3,20,5,hair);
+  px(x+3,y+7,16,12,skin);
+  px(x+1,y+4,4,10,hair);
+  px(x+17,y+4,4,7,hair);
+
+  if(kind==='boy2'){
+    px(x+3,y+3,5,4,hair);
+    px(x+11,y+1,8,3,hair);
+    px(x+17,y+7,3,3,hair);
+  }else{
+    px(x+4,y+2,4,3,hair);
+    px(x+9,y+1,6,3,hair);
+    px(x+14,y+4,6,4,hair);
+  }
+
+  // Mata dan ekspresi
+  if(pose==='pet'){
+    px(x+5,y+11,4,1,'#49312d');
+    px(x+14,y+11,4,1,'#49312d');
+    px(x+5,y+14,3,2,'#e99d9c');
+    px(x+14,y+14,3,2,'#e99d9c');
+    px(x+10,y+16,4,1,'#a65f57');
+  }else{
+    px(x+5,y+10,3,3,'#302b2c');
+    px(x+14,y+10,3,3,'#302b2c');
+    px(x+5,y+14,3,2,'#e99d9c');
+    px(x+14,y+14,3,2,'#e99d9c');
+    px(x+10,y+16,3,1,'#a65f57');
+  }
+
+  // Highlight rambut
+  px(x+5,y+4,4,1,kind==='boy2'?'#987050':'#62515c');
+
+  // Tangan yang mengelus kepala
+  if(pose==='pet'&&kind==='boy2'){
+    px(x+17,y-5,4,3,'#edc09c');
+    px(x+19,y-7,3,3,'#edc09c');
+  }
+}
+
+function background(){
+  px(0,0,240,190,'#172b35');
+
+  // Bintang
+  [[15,18],[39,35],[79,15],[118,25],[166,13],
+   [208,33],[28,60],[188,53],[97,48],[220,15]].forEach(([x,y],i)=>{
+    px(x,y,2,2,i%2?'#d7e9c0':'#8ab5a2');
+  });
+
+  // Bulan
+  px(190,22,12,12,'#d8e9b7');
+  px(194,18,12,12,'#172b35');
+
+  // Jendela
+  px(75,35,88,68,'#405a5c');
+  px(79,39,80,60,'#152b3b');
+  px(117,39,3,60,'#71877a');
+  px(79,67,80,3,'#71877a');
+
+  // Siluet kota
+  [[84,76,10,22],[100,70,12,28],[126,81,13,17],
+   [145,72,9,26],[155,84,5,14]].forEach(([x,y,w,h])=>{
+    px(x,y,w,h,'#263d48');
+    px(x+3,y+4,2,2,'#d4c998');
+    px(x+7,y+12,2,2,'#d4c998');
+  });
+
+  // Dinding dan lantai
+  px(0,104,240,48,'#30473b');
+  px(0,151,240,39,'#654a36');
+
+  for(let x=0;x<240;x+=20){
+    px(x,151,1,39,'#876449');
+    px(x+9,162,5,2,'#79583e');
+  }
+
+  // Kasur
+  px(10,128,57,25,'#253e30');
+  px(7,135,63,17,'#31513a');
+  px(11,132,19,12,'#c1d3a5');
+  px(7,151,63,3,'#947458');
+
+  // Meja
+  px(180,116,46,4,'#96744c');
+  px(185,120,3,25,'#6d513a');
+  px(218,120,3,25,'#6d513a');
+  px(191,104,12,12,'#243d34');
+  px(193,106,8,8,'#b6c98d');
+
+  // Tanaman
+  px(206,100,8,8,'#3d7849');
+  px(202,105,7,7,'#4f9256');
+  px(211,105,7,7,'#4f9256');
+  px(207,108,4,7,'#99704a');
+}
+
+function draw(){
+  background();
+
+  floating.forEach(f=>heart(f.x,f.y,f.color));
+
+  if(action==='hug'){
+    // Dua cowok merapat saat berpelukan
+    character(96,106,'boy','hug');
+    character(117,109,'boy2','hug');
+    heart(108,93);
+    heart(129,98,'#f4d6a3');
+  }else if(action==='pet'){
+    character(104,106,'boy','pet');
+    character(139,111,'boy2','idle');
+    heart(111,91);
+  }else if(action==='gift'){
+    character(104,106,'boy','idle');
+    character(139,111,'boy2','idle');
+    // Hadiah pixel
+    px(120,143,12,10,'#c6d995');
+    px(124,140,4,3,'#f4d6a3');
+    px(119,147,14,2,'#f4d6a3');
+  }else{
+    character(105,106,'boy','idle');
+    character(140,111,'boy2','idle');
+  }
+
+  frame++;
+  if(frame%18===0&&floating.length<8&&action!=='idle'){
+    floating.push({
+      x:95+Math.random()*55,
+      y:95+Math.random()*20,
+      color:Math.random()>.5?'#f49bb0':'#f4d6a3',
+      life:65
+    });
+  }
+
+  floating.forEach(f=>{f.y-=.12;f.life--});
+  floating=floating.filter(f=>f.life>0);
+  requestAnimationFrame(draw);
+}
+
+function say(text){
+  document.getElementById('caption').textContent=text;
+  document.getElementById('mood').textContent='HAPPY '+mood+'%';
+}
+
+function doAction(name,value,text){
+  action=name;
+  until=Date.now()+1600;
+  mood=Math.min(100,mood+value);
+  say(text);
+
+  setTimeout(()=>{
+    if(Date.now()>=until)action='idle';
+  },1650);
+}
+
+function pet(){
+  doAction('pet',7,
+    'Kamu mengelus rambutnya pelan. Dia memejamkan mata dan tersenyum malu-malu. ♡');
+}
+
+function hug(){
+  doAction('hug',10,
+    'Dia merapat dan memelukmu erat. Rasanya nyaman berada di dekatmu. 🫂');
+}
+
+function talk(){
+  const lines=[
+    '“Hari ini capek nggak? Sini cerita sama aku.”',
+    '“Aku seneng banget bisa menghabiskan waktu sama kamu.”',
+    '“Kalau lagi sedih, kamu boleh istirahat di sini.”',
+    '“Makasih ya udah jadi bagian dari hari-hariku.”'
+  ];
+
+  say(lines[dialogue%lines.length]);
+  dialogue++;
+  mood=Math.min(100,mood+3);
+  document.getElementById('mood').textContent='HAPPY '+mood+'%';
+  action='idle';
+}
+
+function gift(){
+  doAction('gift',8,
+    'Kamu memberikan hadiah kecil. Matanya berbinar. “Buat aku? Makasih, sayang!” ♡');
+}
+
+function comfort(){
+  doAction('hug',6,
+    'Kamu duduk di sampingnya dan menggenggam tangannya. Nggak perlu banyak kata, yang penting kalian bersama.');
+}
+
+function letter(){
+  action='pet';
+  mood=100;
+  document.getElementById('mood').textContent='HAPPY 100%';
+
+  say(
+    'Happy mensive satu bulan, pupu nyenyo ♡ Makasih sudah bertahan sama aku. Maaf kalau aku sering marah, ngambek, manja, dan kadang egois. Aku masih belajar memahami kamu lebih baik. Aku nggak janji kita nggak akan pernah berantem, tapi aku mau terus berusaha bareng kamu. Satu bulan ini baru awal cerita kita. Semoga masih banyak kenangan yang bisa kita buat bersama. I love you. ♡'
+  );
+}
+
+draw();
+</script>
+</body>
+</html>
